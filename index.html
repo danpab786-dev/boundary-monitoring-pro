@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Boundary Pro">
     
-    <!-- App Manifest para sa Home Screen Icon -->
+    <!-- Inline App Manifest para sa Home Screen Icon -->
     <link rel="manifest" href='data:application/manifest+json,{
         "name": "Boundary Monitoring System Pro",
         "short_name": "Boundary Pro",
@@ -563,7 +563,7 @@
         <div class="table-header-container">
             <span class="table-title-left">Tala Hanggang sa Huling Hulog</span>
             <div class="table-actions-right">
-                <button class="btn-clear-month" onclick="clearCurrentMonthData()" title="I-clear ang buwang ito">Clear</button>
+                <button class="btn-clear-month" id="btnClearMonth" title="I-clear ang buwang ito">Clear</button>
                 <div class="page-nav-right">
                     <button type="button" class="page-arrow-btn" id="prevMonthBtn" title="Previous Month">◀</button>
                     <span id="pageIndicator">September 2026</span>
@@ -607,510 +607,514 @@
     const savedTheme = localStorage.getItem('boundary_theme') || 'light';
     setTheme(savedTheme);
 
-    let driversList = JSON.parse(localStorage.getItem('boundary_drivers_list')) || [];
-    
-    if (driversList.length === 0) {
-        driversList = [{
-            id: 'no_driver_default',
-            name: 'NO DRIVER',
-            plate: 'N/A',
-            expected: 1200,
-            prevBal: 0,
-            coding: 'None',
-            month: 'September',
-            year: '2026'
-        }];
-        localStorage.setItem('boundary_drivers_list', JSON.stringify(driversList));
-    }
-    
-    let currentDriverId = localStorage.getItem('boundary_current_driver_id') || driversList[0].id;
-    let activeMonthIndex = 8;
-    let activeYearVal = 2026;
-
-    const monthsArray = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-    const driverSelectBox = document.getElementById('driverSelectBox');
-    const selectedDriverText = document.getElementById('selectedDriverText');
-    const driverListDropdown = document.getElementById('driverListDropdown');
-    const btnAddDriver = document.getElementById('btnAddDriver');
-    
-    const selectMonth = document.getElementById('selectMonth');
-    const selectYear = document.getElementById('selectYear');
-    const driverNameInput = document.getElementById('driverName');
-    const plateNumberInput = document.getElementById('plateNumber');
-    const standardExpectedInput = document.getElementById('standardExpected');
-    const previousBalanceInput = document.getElementById('previousBalance');
-    const displayMonthYear = document.getElementById('displayMonthYear');
-    const pageIndicator = document.getElementById('pageIndicator');
-    const codingDisplay = document.getElementById('codingDisplay');
-
-    driverSelectBox.addEventListener('click', function() {
-        driverListDropdown.style.display = driverListDropdown.style.display === 'block' ? 'none' : 'block';
-    });
-
-    window.addEventListener('click', function(e) {
-        if (!driverSelectBox.contains(e.target) && !driverListDropdown.contains(e.target)) {
-            driverListDropdown.style.display = 'none';
-        }
-    });
-
-    function getCodingFromPlate(plate) {
-        if (!plate) return 'None';
-        const cleanPlate = plate.trim();
-        const lastChar = cleanPlate.slice(-1);
+    document.addEventListener("DOMContentLoaded", function() {
+        let driversList = JSON.parse(localStorage.getItem('boundary_drivers_list')) || [];
         
-        if (['1', '2'].includes(lastChar)) return 'Monday';
-        if (['3', '4'].includes(lastChar)) return 'Tuesday';
-        if (['5', '6'].includes(lastChar)) return 'Wednesday';
-        if (['7', '8'].includes(lastChar)) return 'Thursday';
-        if (['9', '0'].includes(lastChar)) return 'Friday';
-        return 'None';
-    }
-
-    plateNumberInput.addEventListener('input', function() {
-        let driver = driversList.find(d => d.id === currentDriverId);
-        let codingVal = getCodingFromPlate(this.value);
-        codingDisplay.innerText = codingVal;
-        
-        if(driver) {
-            driver.coding = codingVal;
-            saveConfig();
+        if (driversList.length === 0) {
+            driversList = [{
+                id: 'no_driver_default',
+                name: 'NO DRIVER',
+                plate: 'N/A',
+                expected: 1200,
+                prevBal: 0,
+                coding: 'None',
+                month: 'September',
+                year: '2026'
+            }];
+            localStorage.setItem('boundary_drivers_list', JSON.stringify(driversList));
         }
-    });
+        
+        let currentDriverId = localStorage.getItem('boundary_current_driver_id') || driversList[0].id;
+        let activeMonthIndex = 8;
+        let activeYearVal = 2026;
 
-    function initDriversDropdown() {
-        driverListDropdown.innerHTML = '';
-        let activeDriverName = '';
+        const monthsArray = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-        driversList.forEach(d => {
-            const item = document.createElement('div');
-            item.className = 'driver-option-item' + (d.id === currentDriverId ? ' active' : '');
-            
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = `${d.name || 'Walang Pangalan'} (${d.plate || 'Walang Plate'})`;
-            nameSpan.style.flex = '1';
-            nameSpan.onclick = function() {
-                currentDriverId = d.id;
-                localStorage.setItem('boundary_current_driver_id', currentDriverId);
-                driverListDropdown.style.display = 'none';
-                loadActiveDriverConfig();
-            };
+        const driverSelectBox = document.getElementById('driverSelectBox');
+        const selectedDriverText = document.getElementById('selectedDriverText');
+        const driverListDropdown = document.getElementById('driverListDropdown');
+        const btnAddDriver = document.getElementById('btnAddDriver');
+        
+        const selectMonth = document.getElementById('selectMonth');
+        const selectYear = document.getElementById('selectYear');
+        const driverNameInput = document.getElementById('driverName');
+        const plateNumberInput = document.getElementById('plateNumber');
+        const standardExpectedInput = document.getElementById('standardExpected');
+        const previousBalanceInput = document.getElementById('previousBalance');
+        const displayMonthYear = document.getElementById('displayMonthYear');
+        const pageIndicator = document.getElementById('pageIndicator');
+        const codingDisplay = document.getElementById('codingDisplay');
 
-            if (d.id === currentDriverId) {
-                activeDriverName = `${d.name || 'Walang Pangalan'} (${d.plate || 'Walang Plate'})`;
-            }
-
-            item.appendChild(nameSpan);
-
-            if (d.name !== 'NO DRIVER' && d.id !== 'no_driver_default') {
-                const delBtn = document.createElement('button');
-                delBtn.className = 'btn-remove-driver';
-                delBtn.textContent = 'Tanggalin';
-                delBtn.onclick = function(e) {
-                    e.stopPropagation();
-                    deleteDriver(d.id, d.name);
-                };
-                item.appendChild(delBtn);
-            }
-
-            driverListDropdown.appendChild(item);
+        driverSelectBox.addEventListener('click', function(e) {
+            e.stopPropagation();
+            driverListDropdown.style.display = driverListDropdown.style.display === 'block' ? 'none' : 'block';
         });
 
-        selectedDriverText.textContent = activeDriverName || 'No Driver';
-    }
+        window.addEventListener('click', function(e) {
+            if (!driverSelectBox.contains(e.target) && !driverListDropdown.contains(e.target)) {
+                driverListDropdown.style.display = 'none';
+            }
+        });
 
-    function deleteDriver(id, name) {
-        if (id === 'no_driver_default' || name === 'NO DRIVER') {
-            alert("Hindi maaaring tanggalin ang NO DRIVER.");
-            return;
-        }
-        if (confirm(`Sigurado ka bang gusto mong tanggalin si ${name || 'ang driver na ito'} at ang lahat ng records niya?`)) {
-            monthsArray.forEach(m => {
-                for(let y = 2024; y <= 2030; y++) {
-                    localStorage.removeItem(`boundary_records_${id}_${m}_${y}`);
-                    localStorage.removeItem(`boundary_prevbal_${id}_${m}_${y}`);
-                }
-            });
-            driversList = driversList.filter(d => d.id !== id);
-            localStorage.setItem('boundary_drivers_list', JSON.stringify(driversList));
+        function getCodingFromPlate(plate) {
+            if (!plate) return 'None';
+            const cleanPlate = plate.trim();
+            const lastChar = cleanPlate.slice(-1);
             
-            if (driversList.length > 0) {
-                currentDriverId = driversList[0].id;
-                localStorage.setItem('boundary_current_driver_id', currentDriverId);
-                loadActiveDriverConfig();
-            } else {
-                currentDriverId = null;
-                localStorage.removeItem('boundary_current_driver_id');
-                initDriversDropdown();
+            if (['1', '2'].includes(lastChar)) return 'Monday';
+            if (['3', '4'].includes(lastChar)) return 'Tuesday';
+            if (['5', '6'].includes(lastChar)) return 'Wednesday';
+            if (['7', '8'].includes(lastChar)) return 'Thursday';
+            if (['9', '0'].includes(lastChar)) return 'Friday';
+            return 'None';
+        }
+
+        plateNumberInput.addEventListener('input', function() {
+            let driver = driversList.find(d => d.id === currentDriverId);
+            let codingVal = getCodingFromPlate(this.value);
+            codingDisplay.innerText = codingVal;
+            
+            if(driver) {
+                driver.coding = codingVal;
+                saveConfig();
+            }
+        });
+
+        function initDriversDropdown() {
+            driverListDropdown.innerHTML = '';
+            let activeDriverName = '';
+
+            driversList.forEach(d => {
+                const item = document.createElement('div');
+                item.className = 'driver-option-item' + (d.id === currentDriverId ? ' active' : '');
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = `${d.name || 'Walang Pangalan'} (${d.plate || 'Walang Plate'})`;
+                nameSpan.style.flex = '1';
+                nameSpan.onclick = function() {
+                    currentDriverId = d.id;
+                    localStorage.setItem('boundary_current_driver_id', currentDriverId);
+                    driverListDropdown.style.display = 'none';
+                    loadActiveDriverConfig();
+                };
+
+                if (d.id === currentDriverId) {
+                    activeDriverName = `${d.name || 'Walang Pangalan'} (${d.plate || 'Walang Plate'})`;
+                }
+
+                item.appendChild(nameSpan);
+
+                if (d.name !== 'NO DRIVER' && d.id !== 'no_driver_default') {
+                    const delBtn = document.createElement('button');
+                    delBtn.className = 'btn-remove-driver';
+                    delBtn.textContent = 'Tanggalin';
+                    delBtn.onclick = function(e) {
+                        e.stopPropagation();
+                        deleteDriver(d.id, d.name);
+                    };
+                    item.appendChild(delBtn);
+                }
+
+                driverListDropdown.appendChild(item);
+            });
+
+            selectedDriverText.textContent = activeDriverName || 'No Driver';
+        }
+
+        function deleteDriver(id, name) {
+            if (id === 'no_driver_default' || name === 'NO DRIVER') {
+                alert("Hindi maaaring tanggalin ang NO DRIVER.");
+                return;
+            }
+            if (confirm(`Sigurado ka bang gusto mong tanggalin si ${name || 'ang driver na ito'} at ang lahat ng records niya?`)) {
+                monthsArray.forEach(m => {
+                    for(let y = 2024; y <= 2030; y++) {
+                        localStorage.removeItem(`boundary_records_${id}_${m}_${y}`);
+                        localStorage.removeItem(`boundary_prevbal_${id}_${m}_${y}`);
+                    }
+                });
+                driversList = driversList.filter(d => d.id !== id);
+                localStorage.setItem('boundary_drivers_list', JSON.stringify(driversList));
+                
+                if (driversList.length > 0) {
+                    currentDriverId = driversList[0].id;
+                    localStorage.setItem('boundary_current_driver_id', currentDriverId);
+                    loadActiveDriverConfig();
+                } else {
+                    currentDriverId = null;
+                    localStorage.removeItem('boundary_current_driver_id');
+                    initDriversDropdown();
+                }
             }
         }
-    }
 
-    function getDriverMonthConfigKey() {
-        return `boundary_prevbal_${currentDriverId}_${monthsArray[activeMonthIndex]}_${activeYearVal}`;
-    }
-
-    function loadActiveDriverConfig() {
-        if (!currentDriverId || driversList.length === 0) {
-            initDriversDropdown();
-            return;
+        function getDriverMonthConfigKey() {
+            return `boundary_prevbal_${currentDriverId}_${monthsArray[activeMonthIndex]}_${activeYearVal}`;
         }
 
-        let driver = driversList.find(d => d.id === currentDriverId);
-        if(!driver) {
-            driver = driversList[0];
-            currentDriverId = driver.id;
-            localStorage.setItem('boundary_current_driver_id', currentDriverId);
-        }
-        
-        if (driver.month && monthsArray.includes(driver.month)) {
-            selectMonth.value = driver.month;
-            activeMonthIndex = monthsArray.indexOf(driver.month);
-        } else {
-            selectMonth.value = monthsArray[activeMonthIndex];
-        }
+        function loadActiveDriverConfig() {
+            if (!currentDriverId || driversList.length === 0) {
+                initDriversDropdown();
+                return;
+            }
 
-        if (driver.year) {
-            selectYear.value = driver.year;
-            activeYearVal = parseInt(driver.year) || 2026;
-        } else {
-            selectYear.value = activeYearVal;
-        }
-
-        driverNameInput.value = driver.name || '';
-        plateNumberInput.value = driver.plate || '';
-        standardExpectedInput.value = driver.expected || 1200;
-        
-        let calculatedCoding = getCodingFromPlate(driver.plate);
-        driver.coding = calculatedCoding;
-        codingDisplay.innerText = calculatedCoding;
-
-        let savedPrevBal = localStorage.getItem(getDriverMonthConfigKey());
-        previousBalanceInput.value = savedPrevBal !== null ? savedPrevBal : (driver.prevBal || 0);
-
-        updateHeaderTitle();
-        renderTable();
-        initDriversDropdown();
-    }
-
-    btnAddDriver.addEventListener('click', function() {
-        const newName = prompt("Pangalan ng Bagong Driver:", "");
-        if(!newName) return;
-        const newPlate = prompt("Plate Number (Hal. ABC-1234):", "");
-        if(!newPlate) return;
-        
-        const newId = 'driver_' + Date.now();
-        const calculatedCoding = getCodingFromPlate(newPlate);
-        
-        const newDriverObj = {
-            id: newId,
-            name: newName,
-            plate: newPlate,
-            expected: 1200,
-            prevBal: 0,
-            coding: calculatedCoding,
-            month: selectMonth.value,
-            year: selectYear.value
-        };
-
-        driversList.push(newDriverObj);
-        localStorage.setItem('boundary_drivers_list', JSON.stringify(driversList));
-        currentDriverId = newId;
-        localStorage.setItem('boundary_current_driver_id', currentDriverId);
-        loadActiveDriverConfig();
-    });
-
-    function saveConfig() {
-        if (!currentDriverId) return;
-        let driver = driversList.find(d => d.id === currentDriverId);
-        if(driver) {
-            driver.month = selectMonth.value;
-            driver.year = selectYear.value;
-            driver.name = driverNameInput.value;
-            driver.plate = plateNumberInput.value;
-            driver.expected = parseFloat(standardExpectedInput.value) || 1200;
-            driver.coding = getCodingFromPlate(plateNumberInput.value);
-            driver.prevBal = parseFloat(previousBalanceInput.value) || 0;
+            let driver = driversList.find(d => d.id === currentDriverId);
+            if(!driver) {
+                driver = driversList[0];
+                currentDriverId = driver.id;
+                localStorage.setItem('boundary_current_driver_id', currentDriverId);
+            }
             
-            activeMonthIndex = monthsArray.indexOf(selectMonth.value);
-            activeYearVal = parseInt(selectYear.value) || 2026;
+            if (driver.month && monthsArray.includes(driver.month)) {
+                selectMonth.value = driver.month;
+                activeMonthIndex = monthsArray.indexOf(driver.month);
+            } else {
+                selectMonth.value = monthsArray[activeMonthIndex];
+            }
 
-            localStorage.setItem(`boundary_prevbal_${currentDriverId}_${monthsArray[activeMonthIndex]}_${activeYearVal}`, previousBalanceInput.value);
-            localStorage.setItem('boundary_drivers_list', JSON.stringify(driversList));
+            if (driver.year) {
+                selectYear.value = driver.year;
+                activeYearVal = parseInt(driver.year) || 2026;
+            } else {
+                selectYear.value = activeYearVal;
+            }
+
+            driverNameInput.value = driver.name || '';
+            plateNumberInput.value = driver.plate || '';
+            standardExpectedInput.value = driver.expected || 1200;
+            
+            let calculatedCoding = getCodingFromPlate(driver.plate);
+            driver.coding = calculatedCoding;
+            codingDisplay.innerText = calculatedCoding;
+
+            let savedPrevBal = localStorage.getItem(getDriverMonthConfigKey());
+            previousBalanceInput.value = savedPrevBal !== null ? savedPrevBal : (driver.prevBal || 0);
+
+            updateHeaderTitle();
+            renderTable();
             initDriversDropdown();
         }
-        updateHeaderTitle();
-        renderTable();
-    }
 
-    function updateHeaderTitle() {
-        if (!currentDriverId || driversList.length === 0) {
-            displayMonthYear.innerText = `${selectMonth.value} ${selectYear.value} | No Driver`;
-            return;
+        btnAddDriver.addEventListener('click', function() {
+            const newName = prompt("Pangalan ng Bagong Driver:", "");
+            if(!newName) return;
+            const newPlate = prompt("Plate Number (Hal. ABC-1234):", "");
+            if(!newPlate) return;
+            
+            const newId = 'driver_' + Date.now();
+            const calculatedCoding = getCodingFromPlate(newPlate);
+            
+            const newDriverObj = {
+                id: newId,
+                name: newName,
+                plate: newPlate,
+                expected: 1200,
+                prevBal: 0,
+                coding: calculatedCoding,
+                month: selectMonth.value,
+                year: selectYear.value
+            };
+
+            driversList.push(newDriverObj);
+            localStorage.setItem('boundary_drivers_list', JSON.stringify(driversList));
+            currentDriverId = newId;
+            localStorage.setItem('boundary_current_driver_id', currentDriverId);
+            loadActiveDriverConfig();
+        });
+
+        function saveConfig() {
+            if (!currentDriverId) return;
+            let driver = driversList.find(d => d.id === currentDriverId);
+            if(driver) {
+                driver.month = selectMonth.value;
+                driver.year = selectYear.value;
+                driver.name = driverNameInput.value;
+                driver.plate = plateNumberInput.value;
+                driver.expected = parseFloat(standardExpectedInput.value) || 1200;
+                driver.coding = getCodingFromPlate(plateNumberInput.value);
+                driver.prevBal = parseFloat(previousBalanceInput.value) || 0;
+                
+                activeMonthIndex = monthsArray.indexOf(selectMonth.value);
+                activeYearVal = parseInt(selectYear.value) || 2026;
+
+                localStorage.setItem(`boundary_prevbal_${currentDriverId}_${monthsArray[activeMonthIndex]}_${activeYearVal}`, previousBalanceInput.value);
+                localStorage.setItem('boundary_drivers_list', JSON.stringify(driversList));
+                initDriversDropdown();
+            }
+            updateHeaderTitle();
+            renderTable();
         }
-        let driver = driversList.find(d => d.id === currentDriverId);
-        let codingVal = driver ? driver.coding : 'None';
-        displayMonthYear.innerText = `${selectMonth.value} ${selectYear.value} | Driver: ${driverNameInput.value || 'Walang Pangalan'} (${plateNumberInput.value || 'N/A'}) | Coding: ${codingVal}`;
-    }
 
-    [selectMonth, selectYear, driverNameInput, plateNumberInput, standardExpectedInput, previousBalanceInput].forEach(el => {
-        el.addEventListener('input', saveConfig);
-        el.addEventListener('change', saveConfig);
-    });
+        function updateHeaderTitle() {
+            if (!currentDriverId || driversList.length === 0) {
+                displayMonthYear.innerText = `${selectMonth.value} ${selectYear.value} | No Driver`;
+                return;
+            }
+            let driver = driversList.find(d => d.id === currentDriverId);
+            let codingVal = driver ? driver.coding : 'None';
+            displayMonthYear.innerText = `${selectMonth.value} ${selectYear.value} | Driver: ${driverNameInput.value || 'Walang Pangalan'} (${plateNumberInput.value || 'N/A'}) | Coding: ${codingVal}`;
+        }
 
-    function getDriverRecordsKey() {
-        return `boundary_records_${currentDriverId}_${monthsArray[activeMonthIndex]}_${activeYearVal}`;
-    }
+        [selectMonth, selectYear, driverNameInput, plateNumberInput, standardExpectedInput, previousBalanceInput].forEach(el => {
+            el.addEventListener('input', saveConfig);
+            el.addEventListener('change', saveConfig);
+        });
 
-    const form = document.getElementById('entryForm');
-    const tableBody = document.getElementById('tableBody');
-    const lblExpected = document.getElementById('lblExpected');
-    const lblGiven = document.getElementById('lblGiven');
-    const lblBalance = document.getElementById('lblBalance');
-    const exportCsvBtn = document.getElementById('exportCsvBtn');
-    const exportPdfBtn = document.getElementById('exportPdfBtn');
-    const dayDateInput = document.getElementById('dayDate');
+        function getDriverRecordsKey() {
+            return `boundary_records_${currentDriverId}_${monthsArray[activeMonthIndex]}_${activeYearVal}`;
+        }
 
-    function getDayOfWeek(dayNum, monthIdx, yearNum) {
-        const dateObj = new Date(yearNum, monthIdx, dayNum);
-        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        return days[dateObj.getDay()];
-    }
+        const form = document.getElementById('entryForm');
+        const tableBody = document.getElementById('tableBody');
+        const lblExpected = document.getElementById('lblExpected');
+        const lblGiven = document.getElementById('lblGiven');
+        const lblBalance = document.getElementById('lblBalance');
+        const exportCsvBtn = document.getElementById('exportCsvBtn');
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
+        const dayDateInput = document.getElementById('dayDate');
+        const btnClearMonth = document.getElementById('btnClearMonth');
 
-    function getDaysInMonth(monthIdx, yearNum) {
-        return new Date(yearNum, monthIdx + 1, 0).getDate();
-    }
+        function getDayOfWeek(dayNum, monthIdx, yearNum) {
+            const dateObj = new Date(yearNum, monthIdx, dayNum);
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            return days[dateObj.getDay()];
+        }
 
-    function updateNextDaySuggestion(records) {
-        const savedDays = Object.keys(records).map(Number);
-        const maxDaysInCurrentMonth = getDaysInMonth(activeMonthIndex, activeYearVal);
-        if (savedDays.length > 0) {
-            const maxDay = Math.max(...savedDays);
-            if (maxDay < maxDaysInCurrentMonth) {
-                dayDateInput.value = maxDay + 1;
+        function getDaysInMonth(monthIdx, yearNum) {
+            return new Date(yearNum, monthIdx + 1, 0).getDate();
+        }
+
+        function updateNextDaySuggestion(records) {
+            const savedDays = Object.keys(records).map(Number);
+            const maxDaysInCurrentMonth = getDaysInMonth(activeMonthIndex, activeYearVal);
+            if (savedDays.length > 0) {
+                const maxDay = Math.max(...savedDays);
+                if (maxDay < maxDaysInCurrentMonth) {
+                    dayDateInput.value = maxDay + 1;
+                } else {
+                    dayDateInput.value = 1;
+                }
             } else {
                 dayDateInput.value = 1;
             }
-        } else {
-            dayDateInput.value = 1;
-        }
-    }
-
-    function changeMonth(direction) {
-        activeMonthIndex += direction;
-        if (activeMonthIndex > 11) {
-            activeMonthIndex = 0;
-            activeYearVal++;
-        } else if (activeMonthIndex < 0) {
-            activeMonthIndex = 11;
-            activeYearVal--;
         }
 
-        selectMonth.value = monthsArray[activeMonthIndex];
-        selectYear.value = activeYearVal;
-        saveConfig();
-    }
-
-    document.getElementById('prevMonthBtn').addEventListener('click', function() {
-        changeMonth(-1);
-    });
-
-    document.getElementById('nextMonthBtn').addEventListener('click', function() {
-        changeMonth(1);
-    });
-
-    window.clearCurrentMonthData = function() {
-        if (!currentDriverId) {
-            alert("No Driver napili.");
-            return;
-        }
-        let records = JSON.parse(localStorage.getItem(getDriverRecordsKey())) || {};
-        const maxDaysInCurrentMonth = getDaysInMonth(activeMonthIndex, activeYearVal);
-        
-        let hasDataInMonth = false;
-        for (let i = 1; i <= maxDaysInCurrentMonth; i++) {
-            if (records[i]) {
-                hasDataInMonth = true;
-                break;
+        function changeMonth(direction) {
+            activeMonthIndex += direction;
+            if (activeMonthIndex > 11) {
+                activeMonthIndex = 0;
+                activeYearVal++;
+            } else if (activeMonthIndex < 0) {
+                activeMonthIndex = 11;
+                activeYearVal--;
             }
+
+            selectMonth.value = monthsArray[activeMonthIndex];
+            selectYear.value = activeYearVal;
+            saveConfig();
         }
 
-        if (!hasDataInMonth && parseFloat(previousBalanceInput.value) === 0) {
-            alert(`Wala namang nakatalang transaksyon o balanse para sa ${monthsArray[activeMonthIndex]} ${activeYearVal}.`);
-            return;
-        }
+        document.getElementById('prevMonthBtn').addEventListener('click', function() {
+            changeMonth(-1);
+        });
 
-        if (confirm(`Sigurado ka bang gusto mong i-clear ang lahat ng tala para sa buwan ng ${monthsArray[activeMonthIndex]} ${activeYearVal}?`)) {
-            localStorage.removeItem(getDriverRecordsKey());
-            localStorage.removeItem(getDriverMonthConfigKey());
-            previousBalanceInput.value = 0;
+        document.getElementById('nextMonthBtn').addEventListener('click', function() {
+            changeMonth(1);
+        });
+
+        btnClearMonth.addEventListener('click', function() {
+            if (!currentDriverId) {
+                alert("No Driver napili.");
+                return;
+            }
+            let records = JSON.parse(localStorage.getItem(getDriverRecordsKey())) || {};
+            const maxDaysInCurrentMonth = getDaysInMonth(activeMonthIndex, activeYearVal);
+            
+            let hasDataInMonth = false;
+            for (let i = 1; i <= maxDaysInCurrentMonth; i++) {
+                if (records[i]) {
+                    hasDataInMonth = true;
+                    break;
+                }
+            }
+
+            if (!hasDataInMonth && parseFloat(previousBalanceInput.value) === 0) {
+                alert(`Wala namang nakatalang transaksyon o balanse para sa ${monthsArray[activeMonthIndex]} ${activeYearVal}.`);
+                return;
+            }
+
+            if (confirm(`Sigurado ka bang gusto mong i-clear ang lahat ng tala para sa buwan ng ${monthsArray[activeMonthIndex]} ${activeYearVal}?`)) {
+                localStorage.removeItem(getDriverRecordsKey());
+                localStorage.removeItem(getDriverMonthConfigKey());
+                previousBalanceInput.value = 0;
+                renderTable();
+                form.reset();
+                alert(`Matagumpay na na-clear ang mga tala para sa ${monthsArray[activeMonthIndex]} ${activeYearVal}.`);
+            }
+        });
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!currentDriverId) {
+                alert("Mangyaring pumili muna o magdagdag ng driver bago mag-save.");
+                return;
+            }
+            let records = JSON.parse(localStorage.getItem(getDriverRecordsKey())) || {};
+            const date = parseInt(dayDateInput.value);
+            const maxDaysInCurrentMonth = getDaysInMonth(activeMonthIndex, activeYearVal);
+            
+            if (date < 1 || date > maxDaysInCurrentMonth) {
+                alert(`Mali ang petsa. Ang ${monthsArray[activeMonthIndex]} ${activeYearVal} ay may hanggang ${maxDaysInCurrentMonth} na araw lamang.`);
+                return;
+            }
+
+            const given = parseFloat(document.getElementById('givenAmt').value) || 0;
+            const dateCovered = document.getElementById('dateCovered').value;
+            const refNo = document.getElementById('refNo').value;
+            const expected = parseFloat(standardExpectedInput.value) || 1200;
+
+            records[date] = { expected, given, dateCovered, refNo };
+            localStorage.setItem(getDriverRecordsKey(), JSON.stringify(records));
             renderTable();
             form.reset();
-            alert(`Matagumpay na na-clear ang mga tala para sa ${monthsArray[activeMonthIndex]} ${activeYearVal}.`);
-        }
-    };
+            updateNextDaySuggestion(records);
+        });
 
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        if (!currentDriverId) {
-            alert("Mangyaring pumili muna o magdagdag ng driver bago mag-save.");
-            return;
-        }
-        let records = JSON.parse(localStorage.getItem(getDriverRecordsKey())) || {};
-        const date = parseInt(dayDateInput.value);
-        const maxDaysInCurrentMonth = getDaysInMonth(activeMonthIndex, activeYearVal);
-        
-        if (date < 1 || date > maxDaysInCurrentMonth) {
-            alert(`Mali ang petsa. Ang ${monthsArray[activeMonthIndex]} ${activeYearVal} ay may hanggang ${maxDaysInCurrentMonth} na araw lamang.`);
-            return;
-        }
+        exportPdfBtn.addEventListener('click', function() {
+            if (!currentDriverId) {
+                alert("Walang driver na napili para i-export.");
+                return;
+            }
+            window.print();
+        });
 
-        const given = parseFloat(document.getElementById('givenAmt').value) || 0;
-        const dateCovered = document.getElementById('dateCovered').value;
-        const refNo = document.getElementById('refNo').value;
-        const expected = parseFloat(standardExpectedInput.value) || 1200;
-
-        records[date] = { expected, given, dateCovered, refNo };
-        localStorage.setItem(getDriverRecordsKey(), JSON.stringify(records));
-        renderTable();
-        form.reset();
-        updateNextDaySuggestion(records);
-    });
-
-    exportPdfBtn.addEventListener('click', function() {
-        if (!currentDriverId) {
-            alert("Walang driver na napili para i-export.");
-            return;
-        }
-        window.print();
-    });
-
-    exportCsvBtn.addEventListener('click', function() {
-        if (!currentDriverId) {
-            alert("Walang driver na napili para i-export.");
-            return;
-        }
-        let records = JSON.parse(localStorage.getItem(getDriverRecordsKey())) || {};
-        let initialBalance = parseFloat(previousBalanceInput.value) || 0;
-        let driver = driversList.find(d => d.id === currentDriverId);
-        let codingVal = driver ? driver.coding : 'None';
-        
-        const savedDays = Object.keys(records).map(Number);
-        const maxRecordedDay = savedDays.length > 0 ? Math.max(...savedDays) : 0;
-        const maxDaysInCurrentMonth = getDaysInMonth(activeMonthIndex, activeYearVal);
-        const limitDay = Math.min(maxRecordedDay, maxDaysInCurrentMonth);
-
-        let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += `Boundary Monitoring - ${monthsArray[activeMonthIndex]} ${activeYearVal},Driver: ${driverNameInput.value},Plate: ${plateNumberInput.value},Coding: ${codingVal}\r\n`;
-        csvContent += "Day,Date,Expected,Given,Date Covered,Ref No.,Short / Over,Running Bal\r\n";
-
-        let totalExpected = 0;
-        let totalGiven = 0;
-        let runningBalance = initialBalance;
-
-        for (let i = 1; i <= limitDay; i++) {
-            let currentExpected = parseFloat(standardExpectedInput.value) || 1200;
-            let dayData = records[i] || { expected: currentExpected, given: 0, dateCovered: '', refNo: '' };
-            let expVal = dayData.expected || currentExpected;
-            let dayOfWeek = getDayOfWeek(i, activeMonthIndex, activeYearVal);
+        exportCsvBtn.addEventListener('click', function() {
+            if (!currentDriverId) {
+                alert("Walang driver na napili para i-export.");
+                return;
+            }
+            let records = JSON.parse(localStorage.getItem(getDriverRecordsKey())) || {};
+            let initialBalance = parseFloat(previousBalanceInput.value) || 0;
+            let driver = driversList.find(d => d.id === currentDriverId);
+            let codingVal = driver ? driver.coding : 'None';
             
-            totalExpected += expVal;
-            totalGiven += dayData.given;
-            let shortOver = dayData.given - expVal;
-            runningBalance += (expVal - dayData.given);
+            const savedDays = Object.keys(records).map(Number);
+            const maxRecordedDay = savedDays.length > 0 ? Math.max(...savedDays) : 0;
+            const maxDaysInCurrentMonth = getDaysInMonth(activeMonthIndex, activeYearVal);
+            const limitDay = Math.min(maxRecordedDay, maxDaysInCurrentMonth);
 
-            let row = [
-                dayOfWeek,
-                i < 10 ? '0' + i : i,
-                expVal,
-                dayData.given,
-                `"${dayData.dateCovered || '-'}"`,
-                `"${dayData.refNo || '-'}"`,
-                shortOver,
-                runningBalance
-            ];
-            csvContent += row.join(",") + "\r\n";
-        }
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += `Boundary Monitoring - ${monthsArray[activeMonthIndex]} ${activeYearVal},Driver: ${driverNameInput.value},Plate: ${plateNumberInput.value},Coding: ${codingVal}\r\n`;
+            csvContent += "Day,Date,Expected,Given,Date Covered,Ref No.,Short / Over,Running Bal\r\n";
 
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `Boundary_Report_${(driverNameInput.value || 'Driver').replace(/\s+/g, '_')}_${monthsArray[activeMonthIndex]}_${activeYearVal}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    });
+            let totalExpected = 0;
+            let totalGiven = 0;
+            let runningBalance = initialBalance;
 
-    function renderTable() {
-        if (!currentDriverId || driversList.length === 0) {
-            initDriversDropdown();
-            return;
-        }
+            for (let i = 1; i <= limitDay; i++) {
+                let currentExpected = parseFloat(standardExpectedInput.value) || 1200;
+                let dayData = records[i] || { expected: currentExpected, given: 0, dateCovered: '', refNo: '' };
+                let expVal = dayData.expected || currentExpected;
+                let dayOfWeek = getDayOfWeek(i, activeMonthIndex, activeYearVal);
+                
+                totalExpected += expVal;
+                totalGiven += dayData.given;
+                let shortOver = dayData.given - expVal;
+                runningBalance += (expVal - dayData.given);
 
-        let records = JSON.parse(localStorage.getItem(getDriverRecordsKey())) || {};
-        tableBody.innerHTML = '';
-        
-        let initialBalance = parseFloat(previousBalanceInput.value) || 0;
-        let totalExpected = 0;
-        let totalGiven = 0;
-        let runningBalance = initialBalance;
-
-        const savedDays = Object.keys(records).map(Number);
-        const maxRecordedDay = savedDays.length > 0 ? Math.max(...savedDays) : 0;
-        const maxDaysInCurrentMonth = getDaysInMonth(activeMonthIndex, activeYearVal);
-        const limitDay = Math.min(maxRecordedDay, maxDaysInCurrentMonth);
-
-        let driver = driversList.find(d => d.id === currentDriverId);
-        const activeCoding = driver ? driver.coding : 'None';
-
-        if (pageIndicator) {
-            pageIndicator.innerText = `${monthsArray[activeMonthIndex]} ${activeYearVal}`;
-        }
-
-        for (let i = 1; i <= limitDay; i++) {
-            let currentExpected = parseFloat(standardExpectedInput.value) || 1200;
-            let dayData = records[i] || { expected: currentExpected, given: 0, dateCovered: '', refNo: '' };
-            
-            let expVal = dayData.expected || currentExpected;
-            
-            totalExpected += expVal;
-            totalGiven += dayData.given;
-            let shortOver = dayData.given - expVal;
-            runningBalance += (expVal - dayData.given);
-
-            let dayOfWeek = getDayOfWeek(i, activeMonthIndex, activeYearVal);
-
-            const row = document.createElement('tr');
-            let shortClass = shortOver < 0 ? 'text-danger' : 'text-success';
-            const fmt = (num) => num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-
-            let dayDisplayHtml = `<strong>${dayOfWeek}</strong>`;
-            let fullDayNames = { 'Mon': 'Monday', 'Tue': 'Tuesday', 'Wed': 'Wednesday', 'Thu': 'Thursday', 'Fri': 'Friday' };
-            if (activeCoding !== 'None' && fullDayNames[dayOfWeek] === activeCoding) {
-                dayDisplayHtml = `<span class="coding-badge">${dayOfWeek} (Coding)</span>`;
+                let row = [
+                    dayOfWeek,
+                    i < 10 ? '0' + i : i,
+                    expVal,
+                    dayData.given,
+                    `"${dayData.dateCovered || '-'}"`,
+                    `"${dayData.refNo || '-'}"`,
+                    shortOver,
+                    runningBalance
+                ];
+                csvContent += row.join(",") + "\r\n";
             }
 
-            row.innerHTML = `
-                <td>${dayDisplayHtml}</td>
-                <td>${i < 10 ? '0' + i : i}</td>
-                <td>${fmt(expVal)}</td>
-                <td>${fmt(dayData.given)}</td>
-                <td>${dayData.dateCovered || '-'}</td>
-                <td>${dayData.refNo || '-'}</td>
-                <td class="${shortClass}">${fmt(shortOver)}</td>
-                <td>${fmt(runningBalance)}</td>
-            `;
-            tableBody.appendChild(row);
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Boundary_Report_${(driverNameInput.value || 'Driver').replace(/\s+/g, '_')}_${monthsArray[activeMonthIndex]}_${activeYearVal}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        function renderTable() {
+            if (!currentDriverId || driversList.length === 0) {
+                initDriversDropdown();
+                return;
+            }
+
+            let records = JSON.parse(localStorage.getItem(getDriverRecordsKey())) || {};
+            tableBody.innerHTML = '';
+            
+            let initialBalance = parseFloat(previousBalanceInput.value) || 0;
+            let totalExpected = 0;
+            let totalGiven = 0;
+            let runningBalance = initialBalance;
+
+            const savedDays = Object.keys(records).map(Number);
+            const maxRecordedDay = savedDays.length > 0 ? Math.max(...savedDays) : 0;
+            const maxDaysInCurrentMonth = getDaysInMonth(activeMonthIndex, activeYearVal);
+            const limitDay = Math.min(maxRecordedDay, maxDaysInCurrentMonth);
+
+            let driver = driversList.find(d => d.id === currentDriverId);
+            const activeCoding = driver ? driver.coding : 'None';
+
+            if (pageIndicator) {
+                pageIndicator.innerText = `${monthsArray[activeMonthIndex]} ${activeYearVal}`;
+            }
+
+            for (let i = 1; i <= limitDay; i++) {
+                let currentExpected = parseFloat(standardExpectedInput.value) || 1200;
+                let dayData = records[i] || { expected: currentExpected, given: 0, dateCovered: '', refNo: '' };
+                
+                let expVal = dayData.expected || currentExpected;
+                
+                totalExpected += expVal;
+                totalGiven += dayData.given;
+                let shortOver = dayData.given - expVal;
+                runningBalance += (expVal - dayData.given);
+
+                let dayOfWeek = getDayOfWeek(i, activeMonthIndex, activeYearVal);
+
+                const row = document.createElement('tr');
+                let shortClass = shortOver < 0 ? 'text-danger' : 'text-success';
+                const fmt = (num) => num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+                let dayDisplayHtml = `<strong>${dayOfWeek}</strong>`;
+                let fullDayNames = { 'Mon': 'Monday', 'Tue': 'Tuesday', 'Wed': 'Wednesday', 'Thu': 'Thursday', 'Fri': 'Friday' };
+                if (activeCoding !== 'None' && fullDayNames[dayOfWeek] === activeCoding) {
+                    dayDisplayHtml = `<span class="coding-badge">${dayOfWeek} (Coding)</span>`;
+                }
+
+                row.innerHTML = `
+                    <td>${dayDisplayHtml}</td>
+                    <td>${i < 10 ? '0' + i : i}</td>
+                    <td>${fmt(expVal)}</td>
+                    <td>${fmt(dayData.given)}</td>
+                    <td>${dayData.dateCovered || '-'}</td>
+                    <td>${dayData.refNo || '-'}</td>
+                    <td class="${shortClass}">${fmt(shortOver)}</td>
+                    <td>${fmt(runningBalance)}</td>
+                `;
+                tableBody.appendChild(row);
+            }
+
+            const fmt = (num) => num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            lblExpected.innerText = `${fmt(totalExpected)}`;
+            lblGiven.innerText = `${fmt(totalGiven)}`;
+            lblBalance.innerText = `${fmt(runningBalance)}`;
+            updateNextDaySuggestion(records);
         }
 
-        const fmt = (num) => num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        lblExpected.innerText = `${fmt(totalExpected)}`;
-        lblGiven.innerText = `${fmt(totalGiven)}`;
-        lblBalance.innerText = `${fmt(runningBalance)}`;
-        updateNextDaySuggestion(records);
-    }
-
-    loadActiveDriverConfig();
+        loadActiveDriverConfig();
+    });
 </script>
 
 </body>
