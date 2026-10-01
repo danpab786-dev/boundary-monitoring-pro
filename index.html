@@ -10,27 +10,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Boundary Pro">
-    
-    <!-- Inline App Manifest para sa Home Screen Icon -->
-    <link rel="manifest" href='data:application/manifest+json,{
-        "name": "Boundary Monitoring System Pro",
-        "short_name": "Boundary Pro",
-        "start_url": ".",
-        "display": "standalone",
-        "background_color": "#f4f9f4",
-        "theme_color": "#2e7d32",
-        "icons": [
-            {
-                "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22><rect width=%22512%22 height=%22512%22 rx=%22100%22 fill=%22%232e7d32%22/><path d=%22M130 220h252l-30-80H160z%22 fill=%22%23fff%22/><circle cx=%22170%22 cy=%22340%22 r=%2245%22 fill=%22%23fff%22/><circle cx=%22342%22 cy=%22340%22 r=%2245%22 fill=%22%23fff%22/><path d=%22M110 220l-30 60h352l-30-60z%22 fill=%22%2381c784%22/></svg>",
-                "sizes": "512x512",
-                "type": "image/svg+xml",
-                "purpose": "any maskable"
-            }
-        ]
-    }'>
-    
-    <!-- Custom SVG Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22><rect width=%22512%22 height=%22512%22 rx=%22100%22 fill=%22%232e7d32%22/><path d=%22M130 220h252l-30-80H160z%22 fill=%22%23fff%22/><circle cx=%22170%22 cy=%22340%22 r=%2245%22 fill=%22%23fff%22/><circle cx=%22342%22 cy=%22340%22 r=%2245%22 fill=%22%23fff%22/></svg>">
 
     <style>
         :root {
@@ -79,8 +58,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            transition: background 0.3s, color 0.3s;
+            font-family: sans-serif;
         }
 
         body {
@@ -148,10 +126,6 @@
             font-weight: bold;
         }
 
-        .page-arrow-btn:hover {
-            opacity: 0.7;
-        }
-
         .btn-clear-month {
             background-color: var(--danger);
             color: white;
@@ -161,10 +135,6 @@
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
-        }
-
-        .btn-clear-month:hover {
-            opacity: 0.85;
         }
 
         .theme-selector {
@@ -327,10 +297,6 @@
             font-size: 0.8rem;
         }
 
-        .driver-option-item:hover {
-            opacity: 0.8;
-        }
-
         .driver-option-item.active {
             background-color: var(--primary-light);
             font-weight: bold;
@@ -392,46 +358,6 @@
             color: var(--success);
             font-weight: bold;
         }
-
-        @media print {
-            body {
-                background-color: #ffffff;
-                color: #000000;
-                padding: 0;
-            }
-            .theme-selector, #configCard, form, .button-group, .driver-dropdown-container, hr, .page-nav-right, .btn-clear-month {
-                display: none !important;
-            }
-            .card {
-                border: none;
-                box-shadow: none;
-                padding: 0;
-                margin-bottom: 10px;
-            }
-            .table-responsive {
-                max-height: none !important;
-                overflow: visible !important;
-            }
-            table {
-                font-size: 0.75rem;
-                width: 100%;
-                page-break-inside: auto;
-            }
-            tr {
-                page-break-inside: avoid;
-                page-break-after: auto;
-            }
-            th, td {
-                border: 1px solid #000;
-                color: #000;
-                padding: 5px;
-            }
-            th {
-                background-color: #e8f5e9 !important;
-                -webkit-print-color-adjust: exact;
-                position: static !important;
-            }
-        }
     </style>
 </head>
 <body data-theme="light">
@@ -440,9 +366,9 @@
     <header>
         <h1>Boundary Monitoring Pro</h1>
         <div class="theme-selector">
-            <button class="theme-btn" onclick="setTheme('light')">Light Green</button>
-            <button class="theme-btn" onclick="setTheme('dark')">Dark Mode</button>
-            <button class="theme-btn" onclick="setTheme('blue')">Modern Blue</button>
+            <button class="theme-btn" type="button" onclick="setTheme('light')">Light Green</button>
+            <button class="theme-btn" type="button" onclick="setTheme('dark')">Dark Mode</button>
+            <button class="theme-btn" type="button" onclick="setTheme('blue')">Modern Blue</button>
         </div>
         <p id="displayMonthYear" style="font-size: 0.8rem; opacity: 0.7; font-weight: 600;"></p>
     </header>
@@ -563,7 +489,7 @@
         <div class="table-header-container">
             <span class="table-title-left">Tala Hanggang sa Huling Hulog</span>
             <div class="table-actions-right">
-                <button class="btn-clear-month" id="btnClearMonth" title="I-clear ang buwang ito">Clear</button>
+                <button class="btn-clear-month" type="button" id="btnClearMonth" title="I-clear ang buwang ito">Clear</button>
                 <div class="page-nav-right">
                     <button type="button" class="page-arrow-btn" id="prevMonthBtn" title="Previous Month">◀</button>
                     <span id="pageIndicator">September 2026</span>
@@ -595,7 +521,9 @@
 <script>
     function setTheme(themeName) {
         document.body.setAttribute('data-theme', themeName);
-        localStorage.setItem('boundary_theme', themeName);
+        try {
+            localStorage.setItem('boundary_theme', themeName);
+        } catch(e) {}
         document.querySelectorAll('.theme-btn').forEach(btn => {
             btn.classList.remove('active');
             if(btn.textContent.toLowerCase().includes(themeName) || (themeName === 'light' && btn.textContent.includes('Light'))) {
@@ -604,11 +532,20 @@
         });
     }
 
-    const savedTheme = localStorage.getItem('boundary_theme') || 'light';
-    setTheme(savedTheme);
+    try {
+        const savedTheme = localStorage.getItem('boundary_theme') || 'light';
+        setTheme(savedTheme);
+    } catch(e) {
+        setTheme('light');
+    }
 
     document.addEventListener("DOMContentLoaded", function() {
-        let driversList = JSON.parse(localStorage.getItem('boundary_drivers_list')) || [];
+        let driversList = [];
+        try {
+            driversList = JSON.parse(localStorage.getItem('boundary_drivers_list')) || [];
+        } catch(e) {
+            driversList = [];
+        }
         
         if (driversList.length === 0) {
             driversList = [{
@@ -621,7 +558,9 @@
                 month: 'September',
                 year: '2026'
             }];
-            localStorage.setItem('boundary_drivers_list', JSON.stringify(driversList));
+            try {
+                localStorage.setItem('boundary_drivers_list', JSON.stringify(driversList));
+            } catch(e) {}
         }
         
         let currentDriverId = localStorage.getItem('boundary_current_driver_id') || driversList[0].id;
@@ -693,7 +632,9 @@
                 nameSpan.style.flex = '1';
                 nameSpan.onclick = function() {
                     currentDriverId = d.id;
-                    localStorage.setItem('boundary_current_driver_id', currentDriverId);
+                    try {
+                        localStorage.setItem('boundary_current_driver_id', currentDriverId);
+                    } catch(e) {}
                     driverListDropdown.style.display = 'none';
                     loadActiveDriverConfig();
                 };
@@ -706,6 +647,7 @@
 
                 if (d.name !== 'NO DRIVER' && d.id !== 'no_driver_default') {
                     const delBtn = document.createElement('button');
+                    delBtn.type = 'button';
                     delBtn.className = 'btn-remove-driver';
                     delBtn.textContent = 'Tanggalin';
                     delBtn.onclick = function(e) {
@@ -729,20 +671,28 @@
             if (confirm(`Sigurado ka bang gusto mong tanggalin si ${name || 'ang driver na ito'} at ang lahat ng records niya?`)) {
                 monthsArray.forEach(m => {
                     for(let y = 2024; y <= 2030; y++) {
-                        localStorage.removeItem(`boundary_records_${id}_${m}_${y}`);
-                        localStorage.removeItem(`boundary_prevbal_${id}_${m}_${y}`);
+                        try {
+                            localStorage.removeItem(`boundary_records_${id}_${m}_${y}`);
+                            localStorage.removeItem(`boundary_prevbal_${id}_${m}_${y}`);
+                        } catch(e) {}
                     }
                 });
                 driversList = driversList.filter(d => d.id !== id);
-                localStorage.setItem('boundary_drivers_list', JSON.stringify(driversList));
+                try {
+                    localStorage.setItem('boundary_drivers_list', JSON.stringify(driversList));
+                } catch(e) {}
                 
                 if (driversList.length > 0) {
                     currentDriverId = driversList[0].id;
-                    localStorage.setItem('boundary_current_driver_id', currentDriverId);
+                    try {
+                        localStorage.setItem('boundary_current_driver_id', currentDriverId);
+                    } catch(e) {}
                     loadActiveDriverConfig();
                 } else {
                     currentDriverId = null;
-                    localStorage.removeItem('boundary_current_driver_id');
+                    try {
+                        localStorage.removeItem('boundary_current_driver_id');
+                    } catch(e) {}
                     initDriversDropdown();
                 }
             }
@@ -762,7 +712,9 @@
             if(!driver) {
                 driver = driversList[0];
                 currentDriverId = driver.id;
-                localStorage.setItem('boundary_current_driver_id', currentDriverId);
+                try {
+                    localStorage.setItem('boundary_current_driver_id', currentDriverId);
+                } catch(e) {}
             }
             
             if (driver.month && monthsArray.includes(driver.month)) {
@@ -787,7 +739,10 @@
             driver.coding = calculatedCoding;
             codingDisplay.innerText = calculatedCoding;
 
-            let savedPrevBal = localStorage.getItem(getDriverMonthConfigKey());
+            let savedPrevBal = null;
+            try {
+                savedPrevBal = localStorage.getItem(getDriverMonthConfigKey());
+            } catch(e) {}
             previousBalanceInput.value = savedPrevBal !== null ? savedPrevBal : (driver.prevBal || 0);
 
             updateHeaderTitle();
@@ -816,9 +771,13 @@
             };
 
             driversList.push(newDriverObj);
-            localStorage.setItem('boundary_drivers_list', JSON.stringify(driversList));
+            try {
+                localStorage.setItem('boundary_drivers_list', JSON.stringify(driversList));
+            } catch(e) {}
             currentDriverId = newId;
-            localStorage.setItem('boundary_current_driver_id', currentDriverId);
+            try {
+                localStorage.setItem('boundary_current_driver_id', currentDriverId);
+            } catch(e) {}
             loadActiveDriverConfig();
         });
 
@@ -837,8 +796,10 @@
                 activeMonthIndex = monthsArray.indexOf(selectMonth.value);
                 activeYearVal = parseInt(selectYear.value) || 2026;
 
-                localStorage.setItem(`boundary_prevbal_${currentDriverId}_${monthsArray[activeMonthIndex]}_${activeYearVal}`, previousBalanceInput.value);
-                localStorage.setItem('boundary_drivers_list', JSON.stringify(driversList));
+                try {
+                    localStorage.setItem(`boundary_prevbal_${currentDriverId}_${monthsArray[activeMonthIndex]}_${activeYearVal}`, previousBalanceInput.value);
+                    localStorage.setItem('boundary_drivers_list', JSON.stringify(driversList));
+                } catch(e) {}
                 initDriversDropdown();
             }
             updateHeaderTitle();
@@ -927,7 +888,10 @@
                 alert("No Driver napili.");
                 return;
             }
-            let records = JSON.parse(localStorage.getItem(getDriverRecordsKey())) || {};
+            let records = {};
+            try {
+                records = JSON.parse(localStorage.getItem(getDriverRecordsKey())) || {};
+            } catch(e) {}
             const maxDaysInCurrentMonth = getDaysInMonth(activeMonthIndex, activeYearVal);
             
             let hasDataInMonth = false;
@@ -944,8 +908,10 @@
             }
 
             if (confirm(`Sigurado ka bang gusto mong i-clear ang lahat ng tala para sa buwan ng ${monthsArray[activeMonthIndex]} ${activeYearVal}?`)) {
-                localStorage.removeItem(getDriverRecordsKey());
-                localStorage.removeItem(getDriverMonthConfigKey());
+                try {
+                    localStorage.removeItem(getDriverRecordsKey());
+                    localStorage.removeItem(getDriverMonthConfigKey());
+                } catch(e) {}
                 previousBalanceInput.value = 0;
                 renderTable();
                 form.reset();
@@ -959,7 +925,10 @@
                 alert("Mangyaring pumili muna o magdagdag ng driver bago mag-save.");
                 return;
             }
-            let records = JSON.parse(localStorage.getItem(getDriverRecordsKey())) || {};
+            let records = {};
+            try {
+                records = JSON.parse(localStorage.getItem(getDriverRecordsKey())) || {};
+            } catch(e) {}
             const date = parseInt(dayDateInput.value);
             const maxDaysInCurrentMonth = getDaysInMonth(activeMonthIndex, activeYearVal);
             
@@ -974,7 +943,9 @@
             const expected = parseFloat(standardExpectedInput.value) || 1200;
 
             records[date] = { expected, given, dateCovered, refNo };
-            localStorage.setItem(getDriverRecordsKey(), JSON.stringify(records));
+            try {
+                localStorage.setItem(getDriverRecordsKey(), JSON.stringify(records));
+            } catch(e) {}
             renderTable();
             form.reset();
             updateNextDaySuggestion(records);
@@ -993,7 +964,10 @@
                 alert("Walang driver na napili para i-export.");
                 return;
             }
-            let records = JSON.parse(localStorage.getItem(getDriverRecordsKey())) || {};
+            let records = {};
+            try {
+                records = JSON.parse(localStorage.getItem(getDriverRecordsKey())) || {};
+            } catch(e) {}
             let initialBalance = parseFloat(previousBalanceInput.value) || 0;
             let driver = driversList.find(d => d.id === currentDriverId);
             let codingVal = driver ? driver.coding : 'None';
@@ -1050,7 +1024,10 @@
                 return;
             }
 
-            let records = JSON.parse(localStorage.getItem(getDriverRecordsKey())) || {};
+            let records = {};
+            try {
+                records = JSON.parse(localStorage.getItem(getDriverRecordsKey())) || {};
+            } catch(e) {}
             tableBody.innerHTML = '';
             
             let initialBalance = parseFloat(previousBalanceInput.value) || 0;
